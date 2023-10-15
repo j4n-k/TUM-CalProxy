@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TUM Calendar Proxy</title>
+    <meta property="og:title" content="TUM Calendar Proxy">
+    <meta name='twitter:title' content="TUM Calendar Proxy">
+    <meta property="og:type" content="website">
+    <meta name="description" content="Ein einfacher Proxy für bessere TUM Kalender">
+    <meta property="og:description" content="Ein einfacher Proxy für bessere TUM Kalender">
+    <meta name='twitter:description' content="Ein einfacher Proxy für bessere TUM Kalender">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="content">
+        <h1 id="heading">TUM Calendar Proxy</h1>
+        <p id="desc">You know what it does.</p>
+        <form id="inputForm">
+            <div id="urlInput" class="textInput">
+                <label for="urlInputLink"></label>
+                <input type="url"
+                       id="urlInputLink"
+                       placeholder="https://campus.tum.de/tumonlinej/ws/termin/ical?pStud=abc&pToken=xyz"
+                       oninput="data.link = document.getElementById('urlInputLink').value"
+                />
+            </div>
+            <div id="inExclude"
+                 ondblclick="data.set_all(false)"
+            >
+                <span id="include"
+                      onclick="data.set_in_exclude(false)">
+                    Include
+                </span>
+                <input type="checkbox"
+                       id="inExcludeCheck"
+                       onclick="data.set_in_exclude(document.getElementById('inExcludeCheck').checked)"
+                       checked
+                >
+                <label for="inExcludeCheck"></label>
+                <span id="exclude"
+                      onclick="data.set_in_exclude(true)">
+                    Exclude
+                </span>
+            </div>
+            <div id="filterInput" class="excluded">
+                <div class = "filterInputs">
+                    <input type="checkbox" id="ex" onclick="data.filter.ex = document.getElementById('ex').checked">
+                    <label for="ex">Exkursion</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="fo" onclick="data.filter.fo = document.getElementById('fo').checked">
+                    <label for="fo">Forschungspraktikum</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="hs" onclick="data.filter.hs = document.getElementById('hs').checked">
+                    <label for="hs">Hauptseminar</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="kl" onclick="data.filter.kl = document.getElementById('kl').checked">
+                    <label for="kl">Klinische Visite</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="ko" onclick="data.filter.ko = document.getElementById('ko').checked">
+                    <label for="ko">Kolloquium</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="mt" onclick="data.filter.mt = document.getElementById('mt').checked">
+                    <label for="mt">Mentoring</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="ov" onclick="data.filter.ov = document.getElementById('ov').checked">
+                    <label for="ov">
+                        <span class="largescreeen">Orientierungsveranstaltung</span>
+                        <span class="smallscreen">Orientierungsveranst.</span>
+                    </label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="pr" onclick="data.filter.pr = document.getElementById('pr').checked">
+                    <label for="pr">Praktikum</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="pt" onclick="data.filter.pt = document.getElementById('pt').checked">
+                    <label for="pt">Projekt</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="ps" onclick="data.filter.ps = document.getElementById('ps').checked">
+                    <label for="ps">Proseminar</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="pe" onclick="data.filter.pe = document.getElementById('pe').checked">
+                    <label for="pe">Prüfungseinsicht</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="re" onclick="data.filter.re = document.getElementById('re').checked">
+                    <label for="re">Repetitorium</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="se" onclick="data.filter.se = document.getElementById('se').checked">
+                    <label for="se">Seminar</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="tt" onclick="data.filter.tt = document.getElementById('tt').checked">
+                    <label for="tt">Tutorium</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="vo" onclick="data.filter.vo = document.getElementById('vo').checked">
+                    <label for="vo">Vorlesung</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="vi" onclick="data.filter.vi = document.getElementById('vi').checked">
+                    <label for="vi">
+                        <span class="largescreeen">VL mit integrierten Übungen</span>
+                        <span class="smallscreen">VL m. i. Übungen</span>
+                    </label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="ws" onclick="data.filter.ws = document.getElementById('ws').checked">
+                    <label for="ws">Workshop</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="zh" onclick="data.filter.zh = document.getElementById('zh').checked">
+                    <label for="zh">
+                        <span class="largescreeen">Zentraler Hochschulsport</span>
+                        <span class="smallscreen">ZHS</span>
+                    </label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="ue" onclick="data.filter.ue = document.getElementById('ue').checked">
+                    <label for="ue">Übung</label>
+                </div>
+                <div class = "filterInputs">
+                    <input type="checkbox" id="fa" onclick="data.filter.fa = document.getElementById('fa').checked">
+                    <label for="fa">Fachprüfung</label>
+                </div>
+            </div>
+        </form>
+        <div class="textInput">
+            <label for="ignoreInputLink" class="displayLabel">Ignore Events:</label>
+            <input type="url"
+                   id="ignoreInputLink"
+                   placeholder="IN0023,Analysis,IN0025,..."
+                   oninput="data.ignore = document.getElementById('ignoreInputLink').value"
+            />
+        </div>
+        <div id="resultContainer" class="blank">
+            <p id="result"></p>
+            <button onclick="copy_button()">
+                Copy
+            </button>
+        </div>
+    </div>
+    <div id="footer">
+        <p>TUM-CalProxy v0.1.0</p>
+        <p class="smallscreen">|</p>
+        <p class="largescreeen">&horbar;</p>
+        <p>&copy; <a href="https://github.com/j4n-k">j4n-k</a></p>
+    </div>
+</body>
+<script>
+    const DEFAULT = document.getElementById("result").innerText;
+
+    let off_default = {
+        ex: false,
+        fo: false,
+        hs: false,
+        kl: false,
+        ko: false,
+        mt: false,
+        ov: false,
+        pr: false,
+        pt: false,
+        ps: false,
+        pe: false,
+        re: false,
+        se: false,
+        tt: false,
+        vo: false,
+        vi: false,
+        ws: false,
+        zh: false,
+        ue: false,
+        fa: false
+    };
+    let on_default = {
+        ex: true,
+        fo: true,
+        hs: true,
+        kl: true,
+        ko: true,
+        mt: true,
+        ov: true,
+        pr: true,
+        pt: true,
+        ps: true,
+        pe: true,
+        re: true,
+        se: true,
+        tt: true,
+        vo: true,
+        vi: true,
+        ws: true,
+        zh: true,
+        ue: true,
+        fa: true
+    };
+
+    let data = {
+        _has_result: false,
+        _link: null,
+        _inExclude: "exclude",
+        _ignore: [],
+        _filter: Object.assign({}, off_default),
+
+        update() {
+            if (!this._link) {
+                this.set_blank();
+                return;
+            }
+            if (this._link.hostname !== "campus.tum.de") {
+                this.set_faulty();
+                return;
+            }
+            if (!this._link.pathname.match(/^\/tumonlinej\/.{2}\/termin\/ical$/)) {
+                this.set_faulty();
+                return;
+            }
+            let pStud = this._link.searchParams.get("pStud");
+            let pPers = this._link.searchParams.get("pPers");
+            if (pStud === null && pPers === null) {
+                this.set_faulty();
+                return;
+            }
+            let pToken = this._link.searchParams.get("pToken");
+            if (pToken === null) {
+                this.set_faulty();
+                return;
+            }
+
+            let new_link = new URL(window.location.origin + "/proxy");
+            args = [];
+            for (const [key, val] of Object.entries(this._filter)) {
+                if (val) args.push(key.toLocaleUpperCase());
+            }
+
+            if (pStud !== null) {
+                new_link.searchParams.append("pStud", pStud);
+            } else {
+                new_link.searchParams.append("pPers", pPers);
+            }
+            new_link.searchParams.append("pToken", pToken);
+            if (args.length > 0) {
+                new_link.searchParams.append(this._inExclude, args.join(","));
+            }
+            if (this._ignore.length > 0) {
+                new_link.searchParams.append("ignore", this._ignore.join(","));
+            }
+
+            // I guess I cant manually tell it to just leave the commas alone
+            document.getElementById("result").innerText = new_link.href.replaceAll("%2C", ",");
+            this.reset_class();
+        },
+
+        set_in_exclude(checked) {
+            let value = checked ? "exclude" : "include";
+
+            if (this._inExclude === value) {
+                return;
+            }
+
+            if (document.getElementById("inExcludeCheck").checked !== checked) {
+                document.getElementById("inExcludeCheck").checked = checked;
+            }
+
+            document.getElementById("filterInput").attributes.getNamedItem("class").value = value + "d";
+
+            for (const [key, val] of Object.entries(this._filter)) {
+                document.getElementById(key).checked = !val;
+                this._filter[key] = !val;
+            }
+            this._inExclude = value;
+
+            this.update();
+        },
+
+        set_all(val) {
+            if (val) {
+                this.filter = Object.assign({}, on_default);
+            } else {
+                this.filter = Object.assign({}, off_default);
+            }
+        },
+
+        set_faulty() {
+            this._has_result = false;
+            document.getElementById("result").innerText = DEFAULT;
+            document.getElementById("urlInput").attributes.getNamedItem("class").value = "textInput faulty";
+            document.getElementById("resultContainer").attributes.getNamedItem("class").value = "blank";
+        },
+
+        set_blank() {
+            this._has_result = false;
+            document.getElementById("urlInput").attributes.getNamedItem("class").value = "textInput";
+            document.getElementById("resultContainer").attributes.getNamedItem("class").value = "blank";
+        },
+
+        reset_class() {
+            this._has_result = true;
+            document.getElementById("urlInput").attributes.getNamedItem("class").value = "textInput";
+            document.getElementById("resultContainer").attributes.getNamedItem("class").value = "";
+        }
+    };
+
+    Object.defineProperty(data, "link", {
+        get: function () {
+            return this._link;
+        },
+        set: function (value) {
+            if (value === "") {
+                this._link = null;
+                this.update();
+                return;
+            }
+            try {
+                this._link = new URL(value);
+            } catch (e) {
+                this._link = null;
+                this.set_faulty();
+                return;
+            }
+            this.update();
+        }
+    });
+
+    let handler = {
+        set(target, property, value) {
+            target[property] = value;
+            data.update();
+            return true;
+        },
+    };
+
+    Object.defineProperty(data, "filter", {
+        get: function () {
+            return new Proxy(this._filter, handler);
+        },
+        set: function (value) {
+            for (const [key, val] of Object.entries(value)) {
+                document.getElementById(key).checked = val;
+            }
+            this._filter = value;
+            this.update();
+        }
+    });
+
+    Object.defineProperty(data, "ignore", {
+        get: function () {
+            return this._ignore;
+        },
+        set: function (value) {
+            if (typeof value === "string") {
+                this._ignore = value.split(",");
+            } else {
+                this._ignore = value;
+            }
+            this.update();
+        }
+    });
+
+    function copy_button() {
+        if (data._has_result) {
+            navigator.clipboard.writeText(document.getElementById('result').innerText);
+        }
+    }
+</script>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        color: white;
+        font-family: "Nunito", sans-serif;
+        text-align: center;
+        background-color: #171818;
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        overflow: auto;
+    }
+
+    @media (prefers-color-scheme: light) {
+        body {
+            color: black;
+            background-color: #bbbcbc;
+        }
+    }
+
+    .content {
+        width: 699px;
+        display: flex;
+        flex-grow: 1;
+        flex-shrink: 0;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 8px;
+    }
+
+    @media screen and (max-width: 699px) {
+        .content {
+            width: 100%;
+        }
+    }
+
+    #heading {
+        font-weight: 800;
+        font-size: 3.5rem;
+        margin: 0.5rem;
+    }
+
+    #desc {
+        margin: 0.5rem 0.5rem 3rem;
+        font-size: 1rem;
+    }
+
+    #inputForm {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .textInput {
+        width: 100%;
+        padding: 0;
+        margin: 0.5rem;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .textInput > .displayLabel {
+        flex-shrink: 0;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+    .textInput > input {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border: 0.2rem solid transparent;
+        background-color: #3f4242;
+        color: white;
+    }
+
+    @media (prefers-color-scheme: light) {
+        .textInput > input {
+            background-color: #f7fbfb;
+            color: black;
+        }
+    }
+
+    .textInput > input:focus {
+        outline: none;
+    }
+
+    .faulty #urlInputLink {
+        border: 0.2rem solid #e52121;
+    }
+
+    #inExclude {
+        margin: 0.5rem 0.5rem 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.4rem;
+        cursor: default;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+    }
+
+    #inExcludeCheck {
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        position: relative;
+        width: 2.4rem;
+        height: 1.2rem;
+        border-radius: 0.7rem;
+        background-color: #3f4242;
+    }
+
+    @media (prefers-color-scheme: light) {
+        #inExcludeCheck {
+            background-color: #f7fbfb;
+        }
+    }
+
+    #inExcludeCheck::before {
+        content: "";
+        display: block;
+        width: 1rem;
+        height: 1rem;
+        position: absolute;
+        top: 0.1rem;
+        left: 0.1rem;
+        border-radius: 0.6rem;
+        background-color: #467147;
+        transition: translate 0.2s ease-in-out,
+                    background-color 0.2s ease-in-out;
+    }
+
+    #inExcludeCheck:checked::before {
+        translate: 1.2rem;
+        background-color: #7f3e3e;
+    }
+
+    #inExcludeCheck > label {
+        display: none;
+    }
+
+    #include {
+        color: #467147;
+    }
+
+    #exclude {
+        color: #7f3e3e;
+    }
+
+    .smallscreen {
+        display: none;
+    }
+
+    @media screen and (max-width: 433px) {
+        .smallscreen {
+            display: inline;
+        }
+        .largescreeen {
+            display: none;
+        }
+    }
+
+    #filterInput {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+        margin: 0.5rem;
+        overflow: hidden;
+    }
+
+    @media screen and (max-width: 533px) {
+        #filterInput {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .filterInputs {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .filterInputs > input {
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 1.2rem;
+        height: 1.2rem;
+        margin: 0.2rem;
+        border-radius: 0.3rem;
+        background-color: #3f4242;
+    }
+
+    .excluded input:checked {
+        background-color: #7f3e3e;
+    }
+
+    .included input:checked {
+        background-color: #467147;
+    }
+
+    .filterInputs label {
+        margin-left: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (prefers-color-scheme: light) {
+        .filterInputs > input {
+            background-color: #686d6d;
+        }
+    }
+
+    #resultContainer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 1.7rem;
+        padding: 0.5rem;
+        border-radius: 0.7rem;
+        background-color: #3f4242;
+    }
+
+    @media (prefers-color-scheme: light) {
+        #resultContainer {
+            background-color: #f7fbfb;
+        }
+    }
+
+    #resultContainer p {
+        margin: 0 0.2rem 0 0;
+        font-size: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #resultContainer button {
+        flex-shrink: 0;
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 4rem;
+        height: 2rem;
+        border-radius: 0.7rem;
+        background-color: #677272;
+        color: white;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.1s step-start,
+                    background-color 0.1s step-start;
+    }
+
+    #resultContainer button:hover {
+        background-color: #8a9494;
+    }
+
+    #resultContainer button:active {
+        transform: scale(0.95);
+        background-color: #6a7676;
+    }
+
+    .blank {
+        opacity: 0.3;
+    }
+
+    .blank button {
+        cursor: default;
+        pointer-events: none;
+        background-color: #535656 !important;
+        color: #908f8f !important;
+    }
+
+    .blank button:hover {
+        background-color: #535656 !important;
+    }
+
+    .blank button:active {
+        background-color: #535656 !important;
+    }
+
+    @media (prefers-color-scheme: light) {
+        #resultContainer button {
+            background-color: #ced5d5;
+            color: black;
+        }
+
+        #resultContainer button:hover {
+            background-color: #a3a9a9;
+        }
+
+        #resultContainer button:active {
+            background-color: #7e8686;
+        }
+
+        .blank button {
+            background-color: #ced5d5 !important;
+            color: #908f8f !important;
+        }
+
+        .blank button:hover {
+            background-color: #ced5d5 !important;
+        }
+
+        .blank button:active {
+            background-color: #ced5d5 !important;
+        }
+    }
+
+    #footer {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    #footer p {
+        margin: 0;
+        font-size: 0.8rem;
+    }
+
+    #footer a {
+        color: inherit;
+    }
+</style>
+</html>
