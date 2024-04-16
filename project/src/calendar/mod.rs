@@ -134,7 +134,18 @@ impl Calendar {
                 }
             };
 
-            let full_name = captures["name"].trim().to_string();
+            let mut full_name = captures["name"].trim().to_string();
+            if full_name.ends_with(" -") {
+                full_name.pop();
+                full_name.pop();
+            }
+            if let Some(desc) = event.get_description() {
+                // For some reason this is necessary for some courses
+                if desc.contains("Zentralübung") {
+                    full_name.push_str(" - Zentralübung");
+                }
+            }
+
             let id = captures.name("id").map(|id| id.as_str());
             let typ = if let Ok(id) = captures["tag"].parse::<EventType>() {
                 id
