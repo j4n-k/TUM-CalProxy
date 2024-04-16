@@ -213,31 +213,95 @@
     let data = {
         _has_result: false,
         _link: null,
+        _pStud: null,
+        _pPers: null,
+        _pToken: null,
         _inExclude: "exclude",
         _ignore: [],
         _filter: Object.assign({}, off_default),
+
+        updateFromTum(link) {
+            if (link.hostname !== "campus.tum.de") {
+                this.set_faulty();
+                return;
+            }
+            if (!link.pathname.match(/^\/tumonlinej\/.{2}\/termin\/ical$/)) {
+                this.set_faulty();
+                return;
+            }
+            let pStud = link.searchParams.get("pStud");
+            let pPers = link.searchParams.get("pPers");
+            if (pStud === null && pPers === null) {
+                this.set_faulty();
+                return;
+            }
+            let pToken = link.searchParams.get("pToken");
+            if (pToken === null) {
+                this.set_faulty();
+                return;
+            }
+
+            this._link = link;
+            this._pStud = pStud;
+            this._pPers = pPers;
+            this._pToken = pToken;
+        },
+
+        updateFromSelf(link) {
+            if (link.hostname !== window.location.hostname) {
+                this.set_faulty();
+                return;
+            }
+            if (!link.pathname.match(/^\/proxy$/)) {
+                this.set_faulty();
+                return;
+            }
+            let pStud = link.searchParams.get("pStud");
+            let pPers = link.searchParams.get("pPers");
+            if (pStud === null && pPers === null) {
+                this.set_faulty();
+                return;
+            }
+            let pToken = link.searchParams.get("pToken");
+            if (pToken === null) {
+                this.set_faulty();
+                return;
+            }
+
+            this._link = link;
+            this._pStud = pStud;
+            this._pPers = pPers;
+            this._pToken = pToken;
+
+            let inExclude = link.searchParams.get("include") ? "include" : "exclude";
+            if (inExclude !== this._inExclude) {
+                this.set_in_exclude(inExclude === "exclude");
+            }
+
+            let filter = Object.assign({}, off_default);
+            let filterString = link.searchParams.get("include") || link.searchParams.get("exclude");
+            if (filterString) {
+                filterString.split(",").forEach((val) => {
+                    if (filter[val.toLowerCase()] !== undefined) {
+                        filter[val.toLowerCase()] = true;
+                    }
+                });
+                this.filter = filter;
+            }
+
+            let ignore = link.searchParams.get("ignore");
+            if (ignore) {
+                this.ignore = ignore;
+                document.getElementById("ignoreInputLink").value = ignore;
+            }
+        },
 
         update() {
             if (!this._link) {
                 this.set_blank();
                 return;
             }
-            if (this._link.hostname !== "campus.tum.de") {
-                this.set_faulty();
-                return;
-            }
-            if (!this._link.pathname.match(/^\/tumonlinej\/.{2}\/termin\/ical$/)) {
-                this.set_faulty();
-                return;
-            }
-            let pStud = this._link.searchParams.get("pStud");
-            let pPers = this._link.searchParams.get("pPers");
-            if (pStud === null && pPers === null) {
-                this.set_faulty();
-                return;
-            }
-            let pToken = this._link.searchParams.get("pToken");
-            if (pToken === null) {
+            if ((!this._pStud && !this._pPers) || !this._pToken) {
                 this.set_faulty();
                 return;
             }
@@ -248,12 +312,12 @@
                 if (val) args.push(key.toLocaleUpperCase());
             }
 
-            if (pStud !== null) {
-                new_link.searchParams.append("pStud", pStud);
+            if (this._pStud !== null) {
+                new_link.searchParams.append("pStud", this._pStud);
             } else {
-                new_link.searchParams.append("pPers", pPers);
+                new_link.searchParams.append("pPers", this._pPers);
             }
-            new_link.searchParams.append("pToken", pToken);
+            new_link.searchParams.append("pToken", this._pToken);
             if (args.length > 0) {
                 new_link.searchParams.append(this._inExclude, args.join(","));
             }
@@ -327,9 +391,17 @@
                 return;
             }
             try {
-                this._link = new URL(value);
+                let link = new URL(value);
+                if (link.hostname === window.location.hostname) {
+                    this.updateFromSelf(link);
+                } else {
+                    this.updateFromTum(link);
+                }
             } catch (e) {
                 this._link = null;
+                this._pStud = null;
+                this._pPers = null;
+                this._pToken = null;
                 this.set_faulty();
                 return;
             }
