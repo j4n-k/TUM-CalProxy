@@ -146,7 +146,14 @@ impl Calendar {
                 }
             }
 
-            let id = captures.name("id").map(|id| id.as_str());
+            let ids = captures
+                .name("id")
+                .map(|id|
+                    id.as_str()
+                        .split(",")
+                        .map(|id| id.trim())
+                        .collect::<Vec<_>>()
+                ).unwrap_or_default();
             let typ = if let Ok(id) = captures["tag"].parse::<EventType>() {
                 id
             } else {
@@ -162,9 +169,9 @@ impl Calendar {
             if ignored_events.contains(&full_name) {
                 continue;
             }
-            if let Some(id) = id { if ignored_events.contains(id) {
+            if ids.iter().any(|&id| ignored_events.contains(id)) {
                 continue;
-            } }
+            }
 
             let name = utils::replace_course_name(full_name.clone());
             event.summary(name.as_str());
@@ -198,8 +205,8 @@ impl Calendar {
             let mut description = String::new();
             write!(&mut description, "Name: {}\n", full_name).expect("Could not write to string");
             write!(&mut description, "Typ: {} ({})\n", typ, typ.id()).expect("Could not write to string");
-            if let Some(id) = id {
-                write!(&mut description, "ID: {}\n", id).expect("Could not write to string");
+            if !ids.is_empty() {
+                write!(&mut description, "IDs: {}\n", ids.join(", ")).expect("Could not write to string");
             }
             if let Some(room) = room {
                 write!(&mut description, "Raum: {}\n", room).expect("Could not write to string");
