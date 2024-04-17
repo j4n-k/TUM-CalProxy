@@ -3,13 +3,8 @@ use syn::parse_macro_input;
 
 use crate::common::JsonFileInput;
 
-
 pub fn course_name_replacer(input: TokenStream1) -> TokenStream1 {
-    let JsonFileInput {
-        vis,
-        name,
-        json
-    } = parse_macro_input!(input as JsonFileInput);
+    let JsonFileInput { vis, name, json } = parse_macro_input!(input as JsonFileInput);
 
     let match_lines = json.iter().map(|(replacing, replaced)| {
         quote::quote! {

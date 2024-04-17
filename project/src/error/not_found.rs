@@ -1,9 +1,9 @@
-use std::fmt;
+use actix_web::body::BoxBody;
 use actix_web::http::StatusCode;
 use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
-use actix_web::body::BoxBody;
 use serde::ser::SerializeMap;
 use serde::Serialize;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct NotFound;
@@ -18,7 +18,8 @@ impl std::error::Error for NotFound {}
 
 impl Serialize for NotFound {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         let mut s = serializer.serialize_map(Some(2))?;
         s.serialize_entry("status", &404)?;
@@ -33,8 +34,7 @@ impl ResponseError for NotFound {
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::NotFound()
-            .json(self)
+        HttpResponse::NotFound().json(self)
     }
 }
 

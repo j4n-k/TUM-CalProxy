@@ -15,14 +15,16 @@ impl MethodNotAvailable {
     }
 
     fn allowed_methods_str(&self) -> String {
-        self.allowed_methods.iter()
+        self.allowed_methods
+            .iter()
             .map(|m| m.as_str())
             .collect::<Vec<_>>()
             .join(", ")
     }
 
     fn allowed_methods_str_vec(&self) -> Vec<&str> {
-        self.allowed_methods.iter()
+        self.allowed_methods
+            .iter()
             .map(|m| m.as_str())
             .collect::<Vec<_>>()
     }
@@ -30,7 +32,11 @@ impl MethodNotAvailable {
 
 impl std::fmt::Display for MethodNotAvailable {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Method Not Allowed, allowed methods: {}", self.allowed_methods_str())
+        write!(
+            f,
+            "Method Not Allowed, allowed methods: {}",
+            self.allowed_methods_str()
+        )
     }
 }
 
@@ -38,7 +44,8 @@ impl std::error::Error for MethodNotAvailable {}
 
 impl Serialize for MethodNotAvailable {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         use serde::ser::SerializeMap;
         let mut s = serializer.serialize_map(Some(3))?;
@@ -56,10 +63,7 @@ impl ResponseError for MethodNotAvailable {
 
     fn error_response(&self) -> HttpResponse {
         HttpResponse::MethodNotAllowed()
-            .append_header((
-                ALLOW,
-                self.allowed_methods_str()
-            ))
+            .append_header((ALLOW, self.allowed_methods_str()))
             .json(self)
     }
 }

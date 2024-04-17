@@ -1,11 +1,11 @@
-use std::convert::Infallible;
-use std::future::{Ready, ready};
-use std::ops::Deref;
-use actix_web::{FromRequest, HttpRequest};
 use actix_web::dev::Payload;
-use hyper::Client as HyperClient;
+use actix_web::{FromRequest, HttpRequest};
 use hyper::client::HttpConnector;
+use hyper::Client as HyperClient;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
+use std::convert::Infallible;
+use std::future::{ready, Ready};
+use std::ops::Deref;
 
 #[derive(Clone)]
 pub struct Client {
@@ -25,7 +25,7 @@ impl Client {
             .wrap_connector(connector);
 
         Self {
-            inner: HyperClient::builder().build(connector)
+            inner: HyperClient::builder().build(connector),
         }
     }
 }

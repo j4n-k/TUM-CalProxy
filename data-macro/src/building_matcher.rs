@@ -4,11 +4,7 @@ use syn::parse_macro_input;
 use crate::common::JsonFileInput;
 
 pub fn building_id_matcher(input: TokenStream1) -> TokenStream1 {
-    let JsonFileInput {
-        vis,
-        name,
-        json
-    } = parse_macro_input!(input as JsonFileInput);
+    let JsonFileInput { vis, name, json } = parse_macro_input!(input as JsonFileInput);
 
     let match_lines = json.iter().map(|(code, building)| {
         quote::quote! {

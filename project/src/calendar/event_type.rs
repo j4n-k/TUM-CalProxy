@@ -1,7 +1,7 @@
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashSet;
 use std::fmt;
 use std::str::FromStr;
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum EventType {
@@ -131,7 +131,9 @@ impl fmt::Display for EventType {
             Self::Seminar => write!(f, "Seminar"),
             Self::Tutorium => write!(f, "Tutorium"),
             Self::Vorlesung => write!(f, "Vorlesung"),
-            Self::VorlesungMitIntegriertenUebungen => write!(f, "Vorlesung mit integrierten Übungen"),
+            Self::VorlesungMitIntegriertenUebungen => {
+                write!(f, "Vorlesung mit integrierten Übungen")
+            }
             Self::Workshop => write!(f, "Workshop"),
             Self::ZentralerHochschulsport => write!(f, "Zentraler Hochschulsport"),
             Self::Uebung => write!(f, "Übung"),
@@ -139,7 +141,6 @@ impl fmt::Display for EventType {
         }
     }
 }
-
 
 impl<'de> Deserialize<'de> for EventType {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -168,9 +169,7 @@ impl FromStr for EventType {
         if let Some(course_type) = EventType::from_id(s) {
             Ok(course_type)
         } else {
-            Err(InvalidEventType {
-                id: s.to_string(),
-            })
+            Err(InvalidEventType { id: s.to_string() })
         }
     }
 }

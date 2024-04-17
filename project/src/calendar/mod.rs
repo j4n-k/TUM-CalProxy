@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 use std::fmt::Write;
 
-use actix_web::{Error, HttpResponse};
 use actix_web::http::header;
+use actix_web::{Error, HttpResponse};
 use icalendar::{Calendar as iCalendar, Component, EventLike, Property};
 use lazy_regex::regex;
 use regex::Regex;
@@ -24,64 +24,44 @@ pub struct Calendar {
 
 impl Calendar {
     pub async fn from_query(query: QueryArgs, client: Client) -> Result<Self, Error> {
-        let id = Id::from_student_or_person_number(
-            query.student_number,
-            query.person_number,
-        )?;
+        let id = Id::from_student_or_person_number(query.student_number, query.person_number)?;
 
         match &id {
             Id::Student(id) => {
-                info!(
-                    student_id = id.as_str(),
-                    "Got calendar request"
-                );
+                info!(student_id = id.as_str(), "Got calendar request");
             }
             Id::Person(id) => {
-                info!(
-                    person_id = id.as_str(),
-                    "Got calendar request"
-                );
+                info!(person_id = id.as_str(), "Got calendar request");
             }
         }
 
         let calendar = fetch_calendar(client, id, query.token).await?;
 
         let filter = if let Some(include) = query.include {
-            Filter::new_include(
-                include.iter()
-                    .map(|typ| *typ)
-                    .collect::<HashSet<_>>()
-            )
+            Filter::new_include(include.iter().map(|typ| *typ).collect::<HashSet<_>>())
         } else if let Some(exclude) = query.exclude {
-            Filter::new_exclude(
-                exclude.iter()
-                    .map(|typ| *typ)
-                    .collect::<HashSet<_>>()
-            )
+            Filter::new_exclude(exclude.iter().map(|typ| *typ).collect::<HashSet<_>>())
         } else {
             Filter::new_none()
         };
 
-        let ignored_events = query.ignore
+        let ignored_events = query
+            .ignore
             .unwrap_or_default()
             .into_iter()
             .collect::<HashSet<_>>();
 
         let mut result = iCalendar::new();
         {
-            let mut prod_id_prop = result.properties.iter_mut()
+            let mut prod_id_prop = result
+                .properties
+                .iter_mut()
                 .filter(|property| property.key() == "PRODID");
 
             if let Some(prop) = prod_id_prop.next() {
-                *prop = Property::new(
-                    "PRODID",
-                    "TUM-CalProxy/0.1",
-                );
+                *prop = Property::new("PRODID", "TUM-CalProxy/0.1");
             } else {
-                result.append_property(Property::new(
-                    "PRODID",
-                    "TUM-CalProxy/0.1",
-                ));
+                result.append_property(Property::new("PRODID", "TUM-CalProxy/0.1"));
             }
         }
 
@@ -104,17 +84,15 @@ impl Calendar {
                 continue;
             };
 
-            let dedup_key = format!(
-                "{}-{:?}",
-                summary, event.get_start(),
-            );
+            let dedup_key = format!("{}-{:?}", summary, event.get_start(),);
             if already_parsed.contains(&dedup_key) {
                 continue;
             } else {
                 already_parsed.insert(dedup_key);
             }
 
-            let name_reg: &Regex = regex!(r#"(?x)
+            let name_reg: &Regex = regex!(
+                r#"(?x)
                 (?<name> .*? )
                 \s?
                 (?: [ \(\[ ]
@@ -123,7 +101,8 @@ impl Calendar {
                 (?<tag> [A-Z]{2} ),
                 \s?
                 (?<group> .* )
-            "#);
+            "#
+            );
             let captures = match name_reg.captures(&summary) {
                 Some(captures) => captures,
                 None => {
@@ -148,12 +127,13 @@ impl Calendar {
 
             let ids = captures
                 .name("id")
-                .map(|id|
+                .map(|id| {
                     id.as_str()
                         .split(",")
                         .map(|id| id.trim())
                         .collect::<Vec<_>>()
-                ).unwrap_or_default();
+                })
+                .unwrap_or_default();
             let typ = if let Ok(id) = captures["tag"].parse::<EventType>() {
                 id
             } else {
@@ -176,13 +156,15 @@ impl Calendar {
             let name = utils::replace_course_name(full_name.clone());
             event.summary(name.as_str());
 
-            let room_reg: &Regex = regex!(r#"(?x)
+            let room_reg: &Regex = regex!(
+                r#"(?x)
                 \(
                 (?<building_id> \d{4} ) \.
                 (?<floor> \d\d|EG|UG|DG|Z\d|U\d ) \.
                 (?<room_id> [\dA-Z]+ )
                 \)
-            "#);
+            "#
+            );
 
             let mut room = None;
             if let Some(loc) = event.get_location() {
@@ -204,9 +186,11 @@ impl Calendar {
 
             let mut description = String::new();
             write!(&mut description, "Name: {}\n", full_name).expect("Could not write to string");
-            write!(&mut description, "Typ: {} ({})\n", typ, typ.id()).expect("Could not write to string");
+            write!(&mut description, "Typ: {} ({})\n", typ, typ.id())
+                .expect("Could not write to string");
             if !ids.is_empty() {
-                write!(&mut description, "IDs: {}\n", ids.join(", ")).expect("Could not write to string");
+                write!(&mut description, "IDs: {}\n", ids.join(", "))
+                    .expect("Could not write to string");
             }
             if let Some(room) = room {
                 write!(&mut description, "Raum: {}\n", room).expect("Could not write to string");
@@ -222,16 +206,17 @@ impl Calendar {
             result.push(event);
         }
 
-        Ok(Self {
-            inner: result,
-        })
+        Ok(Self { inner: result })
     }
 
     pub fn to_response(self) -> HttpResponse {
         HttpResponse::Ok()
             .append_header((header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
             .append_header((header::CONTENT_TYPE, "text/calendar;charset=utf-8"))
-            .append_header((header::CONTENT_DISPOSITION, "attachment;filename=calendar.ics"))
+            .append_header((
+                header::CONTENT_DISPOSITION,
+                "attachment;filename=calendar.ics",
+            ))
             .append_header((header::CONTENT_LANGUAGE, "de"))
             .body(self.inner.to_string())
     }

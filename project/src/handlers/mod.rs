@@ -1,10 +1,10 @@
-use actix_web::{Route, web};
+use actix_web::{web, Route};
 
 use crate::error;
 
 pub mod cal;
-mod static_files;
 mod health;
+mod static_files;
 
 pub use cal::service as cal;
 pub use health::service as health;

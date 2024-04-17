@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 
 mod building_matcher;
-mod course_name_replacer;
 mod common;
+mod course_name_replacer;
 
 #[proc_macro]
 pub fn building_id_matcher(input: TokenStream) -> TokenStream {

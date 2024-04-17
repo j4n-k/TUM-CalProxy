@@ -1,20 +1,20 @@
-use actix_web::{HttpResponse, Responder, Scope, web, Error};
 use actix_web::web::Query;
+use actix_web::{web, Error, HttpResponse, Responder, Scope};
 use hyper::Method;
-use serde::{Deserialize, Deserializer};
 use serde::de::value::StrDeserializer;
+use serde::{Deserialize, Deserializer};
 
-use crate::calendar::Calendar;
 use crate::calendar::event_type::EventType;
+use crate::calendar::Calendar;
 use crate::error;
 use crate::https::Client;
 
 pub fn service() -> Scope {
     Scope::new("/proxy")
         .route("", web::get().to(handler))
-        .default_service(web::route().to(|| async {
-            error::MethodNotAvailable::new(&[&Method::GET])
-        }))
+        .default_service(
+            web::route().to(|| async { error::MethodNotAvailable::new(&[&Method::GET]) }),
+        )
 }
 
 #[derive(Deserialize)]
@@ -36,7 +36,7 @@ pub struct QueryArgs {
 fn deserialize_vec_from_csv<'de, D, T>(deserializer: D) -> Result<Option<Vec<T>>, D::Error>
 where
     D: Deserializer<'de>,
-    T: Deserialize<'de>
+    T: Deserialize<'de>,
 {
     let mut s = if let Some(s) = Option::<String>::deserialize(deserializer)? {
         s

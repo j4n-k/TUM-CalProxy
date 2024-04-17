@@ -1,8 +1,8 @@
-use std::fmt;
-use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
 use actix_web::body::BoxBody;
+use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
 use serde::ser::SerializeMap;
 use serde::Serialize;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct InternalServerError {
@@ -25,7 +25,8 @@ impl std::error::Error for InternalServerError {}
 
 impl Serialize for InternalServerError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         let mut s = serializer.serialize_map(Some(2))?;
         s.serialize_entry("status", &500)?;
@@ -40,8 +41,7 @@ impl ResponseError for InternalServerError {
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::InternalServerError()
-            .json(self)
+        HttpResponse::InternalServerError().json(self)
     }
 }
 

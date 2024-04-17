@@ -1,8 +1,8 @@
-use std::fmt;
-use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
 use actix_web::body::BoxBody;
+use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
 use serde::ser::SerializeMap;
 use serde::Serialize;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct QueryError {
@@ -17,7 +17,11 @@ impl QueryError {
 
 impl fmt::Display for QueryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "missing required query parameter: {}", self.missing_parameter)
+        write!(
+            f,
+            "missing required query parameter: {}",
+            self.missing_parameter
+        )
     }
 }
 
@@ -25,7 +29,8 @@ impl std::error::Error for QueryError {}
 
 impl Serialize for QueryError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         let mut s = serializer.serialize_map(Some(3))?;
         s.serialize_entry("status", &400)?;
@@ -41,8 +46,7 @@ impl ResponseError for QueryError {
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::BadRequest()
-            .json(self)
+        HttpResponse::BadRequest().json(self)
     }
 }
 

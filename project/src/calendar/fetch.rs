@@ -1,7 +1,7 @@
 use actix_web::Error;
 use hyper::{body, Request};
-use ical::IcalParser;
 use ical::parser::ical::component::IcalCalendar;
+use ical::IcalParser;
 use tracing::{error, warn};
 
 use crate::error::{CalendarError, InternalServerError, QueryError};
@@ -13,7 +13,10 @@ pub enum Id {
 }
 
 impl Id {
-    pub fn from_student_or_person_number(student_number: Option<String>, person_number: Option<String>) -> Result<Self, Error> {
+    pub fn from_student_or_person_number(
+        student_number: Option<String>,
+        person_number: Option<String>,
+    ) -> Result<Self, Error> {
         if let Some(student_number) = student_number {
             Ok(Self::Student(student_number))
         } else if let Some(person_number) = person_number {
@@ -60,7 +63,7 @@ pub async fn fetch_calendar(client: Client, id: Id, token: String) -> Result<Ica
 
                 if remaining_tries == 0 {
                     error!("Error fetching calendar: {}", e);
-                    return Err(InternalServerError::new().into())
+                    return Err(InternalServerError::new().into());
                 } else {
                     warn!("Error fetching calendar: {}, retrying", e);
                 }
@@ -71,14 +74,14 @@ pub async fn fetch_calendar(client: Client, id: Id, token: String) -> Result<Ica
     let (parts, body) = response.into_parts();
 
     if !parts.status.is_success() {
-        return Err(CalendarError::new().into())
+        return Err(CalendarError::new().into());
     }
 
     let bytes = match body::to_bytes(body).await {
         Ok(bytes) => bytes,
         Err(e) => {
             error!("Error reading response body: {}", e);
-            return Err(InternalServerError::new().into())
+            return Err(InternalServerError::new().into());
         }
     };
 
@@ -87,11 +90,11 @@ pub async fn fetch_calendar(client: Client, id: Id, token: String) -> Result<Ica
         Some(Ok(cal)) => cal,
         Some(Err(e)) => {
             error!("Error parsing calendar: {}", e);
-            return Err(InternalServerError::new().into())
+            return Err(InternalServerError::new().into());
         }
         None => {
             warn!("TUMOnline returned an empty calendar");
-            return Err(InternalServerError::new().into())
+            return Err(InternalServerError::new().into());
         }
     };
 

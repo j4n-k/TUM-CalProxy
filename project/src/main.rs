@@ -1,11 +1,11 @@
-use actix_web::HttpServer;
 use crate::init::AppInit;
+use actix_web::HttpServer;
 
+mod calendar;
+mod error;
 mod handlers;
 mod https;
 mod init;
-mod calendar;
-mod error;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -19,7 +19,7 @@ async fn main() -> std::io::Result<()> {
             .configure(handlers::static_files)
             .default_service(handlers::default())
     })
-        .bind(addr)?
-        .run()
-        .await
+    .bind(addr)?
+    .run()
+    .await
 }
