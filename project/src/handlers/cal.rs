@@ -38,15 +38,18 @@ where
     D: Deserializer<'de>,
     T: Deserialize<'de>
 {
-    let s = if let Some(s) = Option::<String>::deserialize(deserializer)? {
+    let mut s = if let Some(s) = Option::<String>::deserialize(deserializer)? {
         s
     } else {
         return Ok(None);
     };
 
+    s = s.replace("\\,", "&COMMA;"); // Replace escaped commas with a placeholder
+
     let mut v = Vec::new();
     for item in s.split(',') {
-        let de = StrDeserializer::new(item);
+        let item = item.replace("&COMMA;", ",");
+        let de = StrDeserializer::new(item.as_str());
         let item = T::deserialize(de)?;
         v.push(item);
     }
