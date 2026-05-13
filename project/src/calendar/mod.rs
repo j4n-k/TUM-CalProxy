@@ -38,9 +38,9 @@ impl Calendar {
         let calendar = fetch_calendar(client, id, query.token).await?;
 
         let filter = if let Some(include) = query.include {
-            Filter::new_include(include.iter().map(|typ| *typ).collect::<HashSet<_>>())
+            Filter::new_include(include.iter().copied().collect::<HashSet<_>>())
         } else if let Some(exclude) = query.exclude {
-            Filter::new_exclude(exclude.iter().map(|typ| *typ).collect::<HashSet<_>>())
+            Filter::new_exclude(exclude.iter().copied().collect::<HashSet<_>>())
         } else {
             Filter::new_none()
         };
@@ -185,18 +185,18 @@ impl Calendar {
             }
 
             let mut description = String::new();
-            write!(&mut description, "Name: {}\n", full_name).expect("Could not write to string");
-            write!(&mut description, "Typ: {} ({})\n", typ, typ.id())
+            writeln!(&mut description, "Name: {}", full_name).expect("Could not write to string");
+            writeln!(&mut description, "Typ: {} ({})", typ, typ.id())
                 .expect("Could not write to string");
             if !ids.is_empty() {
-                write!(&mut description, "IDs: {}\n", ids.join(", "))
+                writeln!(&mut description, "IDs: {}", ids.join(", "))
                     .expect("Could not write to string");
             }
             if let Some(room) = room {
-                write!(&mut description, "Raum: {}\n", room).expect("Could not write to string");
+                writeln!(&mut description, "Raum: {}", room).expect("Could not write to string");
             }
-            write!(&mut description, "Gruppe: {}\n", group).expect("Could not write to string");
-            write!(&mut description, "\n------------\n\n").expect("Could not write to string");
+            writeln!(&mut description, "Gruppe: {}", group).expect("Could not write to string");
+            writeln!(&mut description, "\n------------\n\n").expect("Could not write to string");
             write!(&mut description, "{}", summary).expect("Could not write to string");
             if let Some(desc) = event.get_description() {
                 let desc = desc.replace("\\", "");
@@ -210,7 +210,7 @@ impl Calendar {
         Ok(Self { inner: result })
     }
 
-    pub fn to_response(self) -> HttpResponse {
+    pub fn to_response(&self) -> HttpResponse {
         HttpResponse::Ok()
             .append_header((header::X_CONTENT_TYPE_OPTIONS, "nosniff"))
             .append_header((header::CONTENT_TYPE, "text/calendar;charset=utf-8"))

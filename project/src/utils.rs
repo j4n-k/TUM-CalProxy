@@ -1,7 +1,7 @@
+use actix_web::dev::Payload;
+use actix_web::{FromRequest, HttpRequest};
 use std::convert::Infallible;
 use std::future::{ready, Ready};
-use actix_web::{FromRequest, HttpRequest};
-use actix_web::dev::Payload;
 
 #[derive(Debug)]
 pub struct AppData<T>(pub T);
@@ -16,7 +16,10 @@ impl<T: Clone + 'static> FromRequest for AppData<T> {
         if let Some(client) = client {
             ready(Ok(AppData(client.clone())))
         } else {
-            panic!("Data of type {} not found in app data", std::any::type_name::<T>());
+            panic!(
+                "Data of type {} not found in app data",
+                std::any::type_name::<T>()
+            );
         }
     }
 }

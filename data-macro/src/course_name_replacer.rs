@@ -6,15 +6,12 @@ use crate::common::JsonFileInput;
 pub fn course_name_replacer(input: TokenStream1) -> TokenStream1 {
     let JsonFileInput { vis, name, json } = parse_macro_input!(input as JsonFileInput);
 
-    let mut sorted_replacements = json.iter()
-        .map(|(replacing, replaced)| (replacing, replaced))
-        .collect::<Vec<_>>();
+    let mut sorted_replacements = json.iter().collect::<Vec<_>>();
 
-    sorted_replacements.sort_by(|(replacing_a, _), (replacing_b, _)| {
-        replacing_b.len().cmp(&replacing_a.len())
-    });
+    sorted_replacements.sort_by_key(|(replacing_b, _)| std::cmp::Reverse(replacing_b.len()));
 
-    let match_lines = sorted_replacements.into_iter()
+    let match_lines = sorted_replacements
+        .into_iter()
         .map(|(replacing, replaced)| {
             quote::quote! {
                 name = name.replace(#replacing, #replaced);

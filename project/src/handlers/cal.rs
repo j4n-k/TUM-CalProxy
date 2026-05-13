@@ -57,7 +57,10 @@ where
     Ok(Some(v))
 }
 
-async fn handler(Query(query): Query<QueryArgs>, AppData(client): AppData<Client>) -> impl Responder {
+async fn handler(
+    Query(query): Query<QueryArgs>,
+    AppData(client): AppData<Client>,
+) -> impl Responder {
     let calendar = Calendar::from_query(query, client).await?;
     Ok::<HttpResponse, Error>(calendar.to_response())
 }

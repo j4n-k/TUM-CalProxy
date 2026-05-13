@@ -1,7 +1,7 @@
 use actix_web::body::BoxBody;
-use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
 use actix_web::http::header::ALLOW;
 use actix_web::http::Method;
+use actix_web::{HttpRequest, HttpResponse, Responder, ResponseError};
 use serde::Serialize;
 
 #[derive(Debug)]
