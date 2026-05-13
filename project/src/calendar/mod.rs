@@ -172,7 +172,13 @@ impl Calendar {
 
                 if let Some(captures) = room_reg.captures(&loc) {
                     let building_id = &captures["building_id"];
-
+                    let building_id: u16 = match building_id.parse() {
+                        Ok(id) => id,
+                        Err(_) => {
+                            info!("Encountered invalid building ID: {}", building_id);
+                            continue;
+                        }
+                    };
                     if let Some(address) = utils::match_building_id(building_id) {
                         room = Some(loc);
                         event.location(address);
