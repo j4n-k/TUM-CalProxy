@@ -14,7 +14,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --release --bin tum-cal-proxy
 
-FROM gcr.io/distroless/cc-debian12 as runtime
+FROM gcr.io/distroless/cc-debian13 AS runtime
 COPY --from=builder /proxy/target/release/tum-cal-proxy /proxy
 ENTRYPOINT ["./proxy"]
 EXPOSE 8080
