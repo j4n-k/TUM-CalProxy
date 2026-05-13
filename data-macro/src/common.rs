@@ -22,9 +22,7 @@ impl Parse for JsonFileInput {
         let path = content.parse::<syn::LitStr>()?;
         let span = path.span();
 
-        let Ok(path) = path.value().parse::<PathBuf>() else {
-            unreachable!("For some reason rustc thinks parse can return an error here")
-        };
+        let Ok(path) = path.value().parse::<PathBuf>();
 
         let file = match File::open(&path) {
             Ok(file) => file,

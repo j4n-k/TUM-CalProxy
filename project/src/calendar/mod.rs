@@ -175,7 +175,7 @@ impl Calendar {
 
                     if let Some(address) = utils::match_building_id(building_id) {
                         room = Some(loc);
-                        event.location(address.replace(",", "\\,").as_str());
+                        event.location(address);
                     } else {
                         info!("Encountered unknown building ID: {}", building_id)
                     }
@@ -199,6 +199,7 @@ impl Calendar {
             write!(&mut description, "\n------------\n\n").expect("Could not write to string");
             write!(&mut description, "{}", summary).expect("Could not write to string");
             if let Some(desc) = event.get_description() {
+                let desc = desc.replace("\\", "");
                 write!(&mut description, "\n\n{}", desc).expect("Could not write to string");
             }
             event.description(description.as_str());

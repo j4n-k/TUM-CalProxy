@@ -3,7 +3,7 @@ use icalendar::Component;
 
 pub fn from_property(property: ical::property::Property) -> Option<icalendar::Property> {
     let mut prop = if let Some(value) = property.value {
-        icalendar::Property::new_pre_alloc(property.name, value)
+        icalendar::Property::new(property.name, value)
     } else {
         return None;
     };
