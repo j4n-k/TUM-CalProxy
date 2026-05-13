@@ -3,14 +3,13 @@ use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
 use actix_web::web::QueryConfig;
 use actix_web::App;
 use std::env;
+use reqwest::Client;
 use tracing::error;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{fmt, EnvFilter};
 
 use crate::error::{InternalServerError, QueryError};
-
-use crate::https::Client;
 
 #[derive(Clone)]
 pub struct AppInit {

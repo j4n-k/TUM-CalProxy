@@ -1,13 +1,14 @@
+use actix_web::http::Method;
 use actix_web::web::Query;
 use actix_web::{web, Error, HttpResponse, Responder, Scope};
-use hyper::Method;
+use reqwest::Client;
 use serde::de::value::StrDeserializer;
 use serde::{Deserialize, Deserializer};
 
 use crate::calendar::event_type::EventType;
 use crate::calendar::Calendar;
 use crate::error;
-use crate::https::Client;
+use crate::utils::AppData;
 
 pub fn service() -> Scope {
     Scope::new("/proxy")
@@ -56,7 +57,7 @@ where
     Ok(Some(v))
 }
 
-async fn handler(Query(query): Query<QueryArgs>, client: Client) -> impl Responder {
+async fn handler(Query(query): Query<QueryArgs>, AppData(client): AppData<Client>) -> impl Responder {
     let calendar = Calendar::from_query(query, client).await?;
     Ok::<HttpResponse, Error>(calendar.to_response())
 }

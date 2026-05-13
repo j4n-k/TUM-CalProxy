@@ -4,8 +4,8 @@ use actix_web::HttpServer;
 mod calendar;
 mod error;
 mod handlers;
-mod https;
 mod init;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

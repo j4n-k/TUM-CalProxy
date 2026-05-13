@@ -1,11 +1,10 @@
 use actix_web::Error;
-use hyper::{body, Request};
 use ical::parser::ical::component::IcalCalendar;
 use ical::IcalParser;
+use reqwest::Client;
 use tracing::{error, warn};
 
 use crate::error::{CalendarError, InternalServerError, QueryError};
-use crate::https::Client;
 
 pub enum Id {
     Student(String),
@@ -35,28 +34,20 @@ impl Id {
 }
 
 pub async fn fetch_calendar(client: Client, id: Id, token: String) -> Result<IcalCalendar, Error> {
-    let make_req_fn = || {
-        let request = Request::builder()
-            .method("GET")
-            .uri({
-                let uri = "https://campus.tum.de/tumonlinej/ws/termin/ical?";
-                format!("{}{}&pToken={}", uri, id.to_query_string(), token)
-            })
-            .header("User-Agent", "CalProxy/0.1")
-            .body(hyper::Body::empty());
-
-        match request {
-            Ok(request) => Ok(request),
-            Err(e) => {
-                error!("Error building request: {}", e);
-                Err(InternalServerError::new())
-            }
-        }
-    };
+    let url = format!(
+        "https://campus.tum.de/tumonlinej/ws/termin/ical?{}&pToken={}",
+        id.to_query_string(),
+        token
+    );
 
     let mut remaining_tries = 2;
     let response = loop {
-        match client.request(make_req_fn()?).await {
+        match client
+            .get(&url)
+            .header("User-Agent", "CalProxy/0.1")
+            .send()
+            .await
+        {
             Ok(response) => break response,
             Err(e) => {
                 remaining_tries -= 1;
@@ -71,13 +62,11 @@ pub async fn fetch_calendar(client: Client, id: Id, token: String) -> Result<Ica
         }
     };
 
-    let (parts, body) = response.into_parts();
-
-    if !parts.status.is_success() {
+    if !response.status().is_success() {
         return Err(CalendarError::new().into());
     }
 
-    let bytes = match body::to_bytes(body).await {
+    let bytes = match response.bytes().await {
         Ok(bytes) => bytes,
         Err(e) => {
             error!("Error reading response body: {}", e);

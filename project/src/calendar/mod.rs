@@ -6,13 +6,13 @@ use actix_web::{Error, HttpResponse};
 use icalendar::{Calendar as iCalendar, Component, EventLike, Property};
 use lazy_regex::regex;
 use regex::Regex;
+use reqwest::Client;
 use tracing::info;
 
 use crate::calendar::event_type::{EventType, Filter};
 use crate::calendar::fetch::{fetch_calendar, Id};
 use crate::calendar::utils::{from_event, from_property};
 use crate::handlers::cal::QueryArgs;
-use crate::https::Client;
 
 pub mod event_type;
 mod fetch;
