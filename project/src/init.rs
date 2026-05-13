@@ -60,7 +60,7 @@ impl AppInit {
 
 fn init_logging() {
     tracing_subscriber::registry()
-        .with(fmt::layer())
+        .with(fmt::layer().with_ansi(false))
         .with(
             EnvFilter::builder()
                 .with_default_directive(tracing::Level::INFO.into())
